@@ -1,0 +1,10 @@
+{
+	"configurations": [
+		{
+			"type": "delve",
+			"request": "launch",
+			"name": "debug",
+			"program": "${workspaceFolder}"
+		}
+	]
+}
