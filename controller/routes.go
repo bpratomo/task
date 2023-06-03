@@ -10,9 +10,10 @@ var latestTaskId = 0
 
 func create(titleSlice []string) error {
 	title := strings.Join(titleSlice, " ")
+    nextId := dbGetNextId()
 
-	t := Task{Title: title}
-	return dbCreate(t)
+	t := Task{Title: title, ID: nextId}
+	return dbUpdate(nextId,t)
 
 }
 

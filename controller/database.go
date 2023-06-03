@@ -22,21 +22,15 @@ func connect() {
 	})
 }
 
-func dbCreate(t Task) error {
-	return db.Update(func(tx *bolt.Tx) error {
+func dbGetNextId() int {
+	var id int
+	db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("todo"))
-		id, _ := b.NextSequence()
-		t.ID = int(id)
-
-		// Marshal user data into bytes.
-		buf, err := json.Marshal(t)
-		if err != nil {
-			return err
-		}
-
-		// Persist bytes to users bucket.
-		return b.Put(itob(t.ID), buf)
+		idb, _ := b.NextSequence()
+		id = int(idb)
+		return nil
 	})
+	return id
 
 }
 
