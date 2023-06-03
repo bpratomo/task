@@ -9,11 +9,11 @@ func init() {
 
 func ProcessRequest(s []string) {
 	verb := s[0]
-	var payload string
+	var payload []string
 	if len(s) > 1 {
-		payload = s[1]
+		payload = s[1:]
 	} else {
-		payload = ""
+		payload = nil
 	}
 
 	switch verb {
@@ -25,6 +25,9 @@ func ProcessRequest(s []string) {
 
 	case "delete", "d":
 		delete(payload)
+
+	case "update", "u":
+		Update(payload)
 
 	default:
 		fmt.Println("Verb not valid")
