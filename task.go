@@ -3,10 +3,10 @@ package main
 import (
 	// "os"
 	"os"
-	"task/controller"
+	"task/lib"
 )
 
 func main() {
     arg:= os.Args[1:]
-    controller.ProcessRequest(arg)
+    lib.ProcessRequest(arg)
 }
