@@ -1,14 +1,26 @@
 package app
 
 import (
+	"strconv"
+	c "task/lib/controllers"
 	m "task/lib/models"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func RenderListBox(app *tview.Application, tasks []m.Task) *tview.List {
+var selectedId string
+var selectedIndex int
+var curList *tview.List
+
+func ConfigureTaskList(app *tview.Application, tasks []m.Task) *tview.List {
 	list := RenderList(app, tasks)
-	list.SetBorder(true).SetTitle("Task list")
+	curList = list
+	list.SetBorder(true).SetTitle("Task list").SetTitleAlign(tview.AlignLeft)
+	list.SetChangedFunc(selectionFunc)
+	list.SetInputCapture(handleKeyInput)
+	list.SetSelectedFocusOnly(true)
+	list.ShowSecondaryText(false)
 
 	return list
 
@@ -17,12 +29,27 @@ func RenderListBox(app *tview.Application, tasks []m.Task) *tview.List {
 func RenderList(app *tview.Application, tasks []m.Task) *tview.List {
 	list := tview.NewList()
 
-	for _, task := range tasks {
-		list.AddItem(task.Title, "", rune(task.ID), nil)
+	for i, task := range tasks {
+		istr := strconv.Itoa(i + 1)
+		irunes := []rune(istr)
+		list.AddItem(task.Title, strconv.Itoa(task.ID), irunes[0], nil)
 	}
-	list.AddItem("Quit", "Press to exit", 'q', func() {
-		app.Stop()
-	})
 
 	return list
+}
+
+func selectionFunc(index int, mainText string, secondaryText string, shortcut rune) {
+	selectedId = secondaryText
+	selectedIndex = index
+}
+
+func handleKeyInput(event *tcell.EventKey) *tcell.EventKey {
+	switch event.Rune() {
+	case 'd':
+		c.Delete([]string{selectedId})
+		curList.RemoveItem(selectedIndex)
+		return event
+	default:
+		return event
+	}
 }

@@ -1,4 +1,4 @@
-package lib
+package controllers
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 
 var latestTaskId = 0
 
-func create(titleSlice []string) error {
+func Create(titleSlice []string) error {
 	title := strings.Join(titleSlice, " ")
     nextId := d.GetNextId()
 
@@ -22,7 +22,7 @@ func create(titleSlice []string) error {
 
 }
 
-func getAll(filterSlice []string) {
+func GetAll(filterSlice []string) {
 	filter := strings.Join(filterSlice, " ")
 	tasks := d.Get(filter)
 
@@ -48,7 +48,7 @@ func Update(params []string) error {
 	return err
 }
 
-func delete(ids []string) error {
+func Delete(ids []string) error {
 	for _, id := range ids {
 		idInt, err := strconv.Atoi(id)
 		if err != nil {

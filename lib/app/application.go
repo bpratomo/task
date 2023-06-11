@@ -26,13 +26,10 @@ func Run() {
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
-		case tcell.KeyEscape:
-			inputField.SetText("Escaped")
-            return nil
 
-		case tcell.KeyUp, tcell.KeyDown:
+		case tcell.KeyRight, tcell.KeyLeft:
 			handleMovement(event.Key(), flex, app)
-            return nil
+			return nil
 
 		case tcell.KeyCtrlC:
 			app.Stop()
@@ -59,18 +56,24 @@ func handleMovement(k tcell.Key, flex *tview.Flex, app *tview.Application) {
 		}
 	}
 
+	var toBeFocusedIndex int
 	switch k {
-	case tcell.KeyDown:
+	case tcell.KeyRight:
 		if focusedIndex < flex.GetItemCount()-1 {
-			toBeFocusedItem := flex.GetItem(focusedIndex + 1)
-			app.SetFocus(toBeFocusedItem)
+            toBeFocusedIndex = focusedIndex + 1
+		} else {
+			toBeFocusedIndex = 0
 		}
-	case tcell.KeyUp:
+
+	case tcell.KeyLeft:
 		if focusedIndex > 0 {
-			toBeFocusedItem := flex.GetItem(focusedIndex - 1)
-			app.SetFocus(toBeFocusedItem)
+			toBeFocusedIndex = focusedIndex - 1
+		} else {
+			toBeFocusedIndex = flex.GetItemCount() - 1
 		}
 
 	}
+	toBeFocusedItem := flex.GetItem(toBeFocusedIndex)
+	app.SetFocus(toBeFocusedItem)
 
 }

@@ -9,7 +9,7 @@ import (
 
 func RenderSearchBox(app *tview.Application, tasks []m.Task) *tview.InputField {
 	inputField := RenderSearchField(app)
-	inputField.SetBorder(true).SetTitle("Search bar")
+	inputField.SetBorder(true).SetTitle("Search bar").SetTitleAlign(tview.AlignLeft)
 
 	return inputField
 }
