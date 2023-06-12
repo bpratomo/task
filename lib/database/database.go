@@ -9,38 +9,40 @@ import (
 	m "task/lib/models"
 )
 
-var db *bolt.DB
+// func init() {
+// 	connect()
+// }
 
-func init() {
-	connect()
-}
-
-func connect() {
-	newDb, err := bolt.Open("my.db", 0600, nil)
+func connect() *bolt.DB {
+	db, err := bolt.Open("my.db", 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	db = newDb
 	db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("todo"))
 		return err
 	})
+	return db
 }
 
 func GetNextId() int {
 	var id int
+	db := connect()
 	db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("todo"))
 		idb, _ := b.NextSequence()
 		id = int(idb)
 		return nil
 	})
+
+	db.Close()
 	return id
 
 }
 
 func Update(id int, t m.Task) error {
-	return db.Update(func(tx *bolt.Tx) error {
+	db := connect()
+	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("todo"))
 
 		// Marshal user data into bytes.
@@ -52,10 +54,13 @@ func Update(id int, t m.Task) error {
 		// Persist bytes to users bucket.
 		return b.Put(itob(id), buf)
 	})
+	db.Close()
+	return err
 }
 
 func Get(filter string) []m.Task {
 	var ts []m.Task
+	db := connect()
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("todo"))
@@ -76,12 +81,14 @@ func Get(filter string) []m.Task {
 
 		return nil
 	})
+	db.Close()
 
 	return ts
 }
 
 func Delete(id int) error {
-	return db.Update(func(tx *bolt.Tx) error {
+	db := connect()
+	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("todo"))
 		err := b.Delete(itob(id))
 		if err != nil {
@@ -89,5 +96,8 @@ func Delete(id int) error {
 		}
 		return nil
 	})
+
+	db.Close()
+	return err
 
 }

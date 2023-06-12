@@ -72,7 +72,7 @@ func focusOnTasks() {
 	if flex == nil {
 		return
 	}
-	app.SetFocus(flex.GetItem(1))
+	app.SetFocus(list)
 }
 
 func handleMovement(k tcell.Key, flex *tview.Flex, app *tview.Application) {

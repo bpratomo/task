@@ -1,11 +1,9 @@
 package lib
 
 import (
-    "task/lib/app"
-    c "task/lib/controllers"
+	"task/lib/app"
+	c "task/lib/controllers"
 )
-
-
 
 func parseArgs(s []string) (verb string, payload []string) {
 	if len(s) > 0 {
