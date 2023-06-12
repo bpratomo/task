@@ -28,7 +28,7 @@ func doneFuncFactory(callback func(string)) func(tcell.Key) {
 		switch key {
 		case tcell.KeyEnter:
 			callback(inputField.GetText())
-            inputField.SetText("")
+			inputField.SetText("")
 		default:
 		}
 	}

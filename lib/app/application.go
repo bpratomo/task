@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	c "task/lib/app/components"
 	r "task/lib/controllers"
 	d "task/lib/database"
@@ -18,64 +16,54 @@ var displayedTasks []m.Task
 var inputField *tview.InputField
 var list *tview.List
 
-func Run() {
-
+func configure() {
 	app = tview.NewApplication()
-	displayedTasks = d.Get("")
+	displayedTasks = d.GetAll()
 
 	list = c.ConfigureTaskList(app, displayedTasks)
-	inputField = c.RenderSearchBox(app, updateTaskList(), submitTask())
+	inputField = c.RenderSearchBox(app, onSearchbarChange(), onSearchBarSubmit())
 
 	flex = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(inputField, 3, 1, true).
 		AddItem(list, 0, 10, false)
 
+}
+
+func Run() {
+	configure()
+
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
-
 		case tcell.KeyRight, tcell.KeyLeft:
-			handleMovement(event.Key(), flex, app)
+			handleMovement(event.Key())
 			return nil
 
 		default:
 			return event
-
 		}
-
 	})
 
 	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
 		panic(err)
 	}
-
-	fmt.Println(app)
 }
 
-func updateTaskList() func(string) {
+func onSearchbarChange() func(string) {
 	return func(s string) {
 		displayedTasks = d.Get(s)
 		c.ReRenderList(list, displayedTasks)
 	}
 }
 
-func submitTask() func(string) {
+func onSearchBarSubmit() func(string) {
 	return func(s string) {
 		r.Create([]string{s})
-		updateTaskList()("")
-		app.SetFocus(list)
-		app.SetFocus(flex)
-
+		onSearchbarChange()("")
 	}
 }
 
-func focusOnTasks() {
-	if flex == nil {
-		return
-	}
-	app.SetFocus(list)
-}
 
-func handleMovement(k tcell.Key, flex *tview.Flex, app *tview.Application) {
+func handleMovement(k tcell.Key) {
 	var focusedIndex int
 	for i := 0; i < flex.GetItemCount(); i++ {
 		item := flex.GetItem(i)

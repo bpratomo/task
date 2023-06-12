@@ -4,6 +4,7 @@ import (
 	"strconv"
 	c "task/lib/controllers"
 	m "task/lib/models"
+	// conf "task/lib/config"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -35,7 +36,7 @@ func RenderList(list *tview.List, tasks []m.Task) {
 	for i, task := range tasks {
 		istr := strconv.Itoa(i + 1)
 		irunes := []rune(istr)
-		list.AddItem(task.Title, strconv.Itoa(task.ID), irunes[0], nil)
+		list.AddItem(task.Title+" - "+task.Project.Name, strconv.Itoa(task.ID), irunes[0], nil)
 	}
 }
 

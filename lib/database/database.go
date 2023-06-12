@@ -9,9 +9,6 @@ import (
 	m "task/lib/models"
 )
 
-// func init() {
-// 	connect()
-// }
 
 func connect() *bolt.DB {
 	db, err := bolt.Open("my.db", 0600, nil)
@@ -56,6 +53,10 @@ func Update(id int, t m.Task) error {
 	})
 	db.Close()
 	return err
+}
+
+func GetAll() []m.Task{
+    return Get("")
 }
 
 func Get(filter string) []m.Task {

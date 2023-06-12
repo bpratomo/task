@@ -9,15 +9,17 @@ import (
 import (
     d "task/lib/database"
     m "task/lib/models"
+    s "task/lib/services"
 )
 
 var latestTaskId = 0
 
 func Create(titleSlice []string) error {
 	title := strings.Join(titleSlice, " ")
+    t := s.ParseTaskSubmission(title)
     nextId := d.GetNextId()
 
-	t := m.Task{Title: title, ID: nextId}
+	t.ID = nextId
 	return d.Update(nextId,t)
 
 }
