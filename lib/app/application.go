@@ -2,7 +2,9 @@ package app
 
 import (
 	"sort"
-	c "task/lib/app/components"
+	o "task/lib/app/components/omnibar"
+	l "task/lib/app/components/task_and_project"
+	g "task/lib/app/global"
 	r "task/lib/controllers"
 	d "task/lib/database"
 	m "task/lib/models"
@@ -14,29 +16,27 @@ import (
 var app *tview.Application
 var appFlex *tview.Flex
 var taskFlex *tview.Flex
-var displayedTasks []m.Task
-var displayedProjects []m.Project
 var projectMap map[m.Project]bool
-var inputField *tview.InputField
+var omnibar *tview.InputField
 var taskList *tview.List
 var projectList *tview.List
 
+var globalState g.GlobalState
+
 func configure() {
 	app = tview.NewApplication()
-	displayedTasks, projectMap = d.GetAll()
-	displayedProjects = convertMapToList(projectMap)
+	globalState.DisplayedTasks, projectMap = d.GetAll()
+	globalState.DisplayedProjects = convertMapToList(projectMap)
 
-	taskList = c.ConfigureTaskList(app, displayedTasks)
-	projectList = c.ConfigureProjectList(app, displayedProjects)
+	taskList, projectList = l.ConfigureLists(app, &globalState,refresh)
 
-	inputField = c.RenderSearchBox(app, onSearchbarChange(), onSearchBarSubmit())
+	omnibar = o.RenderSearchBox(app, onSearchbarChange(), onSearchBarSubmit())
 
 	taskFlex = tview.NewFlex().
 		AddItem(projectList, 0, 1, true).
 		AddItem(taskList, 0, 4, false)
 
 	appFlex = tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(inputField, 3, 1, true).
 		AddItem(taskFlex, 0, 10, false)
 
 }
@@ -46,65 +46,74 @@ func Run() {
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
+		case tcell.KeyEscape:
+			appFlex.RemoveItem(omnibar)
+			app.SetFocus(taskList)
+			globalState.InputMode = false
+			return event
+
 		case tcell.KeyRight, tcell.KeyLeft:
 			handleMovement(event.Key())
-			return nil
-
-		default:
 			return event
 		}
+
+		switch {
+		case event.Rune() == 'a' && globalState.InputMode == false:
+			appFlex.Clear()
+			appFlex.AddItem(omnibar, 3, 1, true)
+			appFlex.AddItem(taskFlex, 0, 10, false)
+			app.SetFocus(omnibar)
+			globalState.InputMode = true
+			return nil
+		}
+
+		return event
 	})
 
-	if err := app.SetRoot(appFlex, true).SetFocus(appFlex).Run(); err != nil {
+	if err := app.SetRoot(appFlex, true).SetFocus(projectList).Run(); err != nil {
 		panic(err)
 	}
 }
 
 func onSearchbarChange() func(string) {
 	return func(s string) {
-		displayedTasks, projectMap = d.Get(s)
-		displayedProjects = convertMapToList(projectMap)
-		c.ReRenderList(taskList, displayedTasks)
-        c.ReRenderProjectList(projectList, displayedProjects)
+		globalState.DisplayedTasks, projectMap = d.Get(s)
+		globalState.DisplayedProjects = convertMapToList(projectMap)
+		l.ReRenderLists()
 	}
+}
+
+func refresh() {
+	globalState.DisplayedTasks, projectMap = d.GetAll()
+	globalState.DisplayedProjects = convertMapToList(projectMap)
 }
 
 func onSearchBarSubmit() func(string) {
 	return func(s string) {
 		r.Create([]string{s})
 		onSearchbarChange()("")
+		appFlex.RemoveItem(omnibar)
+		app.SetFocus(taskList)
+		globalState.InputMode = false
+
 	}
 }
 
 func handleMovement(k tcell.Key) {
-	var focusedIndex int
-	for i := 0; i < appFlex.GetItemCount(); i++ {
-		item := appFlex.GetItem(i)
-		if item.HasFocus() {
-			focusedIndex = i
-			break
+	switch app.GetFocus() {
+	case projectList:
+		app.SetFocus(taskList)
+	case taskList:
+		app.SetFocus(projectList)
+	case projectList:
+		switch k {
+		case tcell.KeyRight:
+			app.SetFocus(taskList)
+		case tcell.KeyLeft:
+			app.SetFocus(projectList)
 		}
+		globalState.InputMode = false
 	}
-	var toBeFocusedIndex int
-	switch k {
-	case tcell.KeyRight:
-		if focusedIndex < appFlex.GetItemCount()-1 {
-			toBeFocusedIndex = focusedIndex + 1
-		} else {
-			toBeFocusedIndex = 0
-		}
-
-	case tcell.KeyLeft:
-		if focusedIndex > 0 {
-			toBeFocusedIndex = focusedIndex - 1
-		} else {
-			toBeFocusedIndex = appFlex.GetItemCount() - 1
-		}
-
-	}
-	toBeFocusedItem := appFlex.GetItem(toBeFocusedIndex)
-	app.SetFocus(toBeFocusedItem)
-
 }
 
 func convertMapToList(ms map[m.Project]bool) []m.Project {
