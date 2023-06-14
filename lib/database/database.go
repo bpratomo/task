@@ -55,12 +55,14 @@ func Update(id int, t m.Task) error {
 	return err
 }
 
-func GetAll() []m.Task{
+func GetAll() ([]m.Task,map[m.Project]bool){
     return Get("")
 }
 
-func Get(filter string) []m.Task {
+func Get(filter string) ([]m.Task,map[m.Project]bool) {
 	var ts []m.Task
+    var ps map[m.Project]bool
+    ps = make(map[m.Project]bool)
 	db := connect()
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
@@ -77,6 +79,9 @@ func Get(filter string) []m.Task {
 
 			if strings.Contains(t.Title, filter) || filter == "" {
 				ts = append(ts, t)
+                if len(t.Project.Name) > 0{
+                    ps[t.Project] = true
+                }
 			}
 		}
 
@@ -84,7 +89,7 @@ func Get(filter string) []m.Task {
 	})
 	db.Close()
 
-	return ts
+	return ts, ps
 }
 
 func Delete(id int) error {

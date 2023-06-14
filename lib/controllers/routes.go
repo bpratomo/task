@@ -7,26 +7,26 @@ import (
 )
 
 import (
-    d "task/lib/database"
-    m "task/lib/models"
-    s "task/lib/services"
+	d "task/lib/database"
+	m "task/lib/models"
+	s "task/lib/services"
 )
 
 var latestTaskId = 0
 
 func Create(titleSlice []string) error {
 	title := strings.Join(titleSlice, " ")
-    t := s.ParseTaskSubmission(title)
-    nextId := d.GetNextId()
+	t := s.ParseTaskSubmission(title)
+	nextId := d.GetNextId()
 
 	t.ID = nextId
-	return d.Update(nextId,t)
+	return d.Update(nextId, t)
 
 }
 
 func GetAll(filterSlice []string) {
 	filter := strings.Join(filterSlice, " ")
-	tasks := d.Get(filter)
+	tasks, _ := d.Get(filter)
 
 	for _, task := range tasks {
 		fmt.Printf("%v: %v \n", task.ID, task.Title)

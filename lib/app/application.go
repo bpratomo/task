@@ -1,6 +1,7 @@
 package app
 
 import (
+	"sort"
 	c "task/lib/app/components"
 	r "task/lib/controllers"
 	d "task/lib/database"
@@ -11,21 +12,32 @@ import (
 )
 
 var app *tview.Application
-var flex *tview.Flex
+var appFlex *tview.Flex
+var taskFlex *tview.Flex
 var displayedTasks []m.Task
+var displayedProjects []m.Project
+var projectMap map[m.Project]bool
 var inputField *tview.InputField
-var list *tview.List
+var taskList *tview.List
+var projectList *tview.List
 
 func configure() {
 	app = tview.NewApplication()
-	displayedTasks = d.GetAll()
+	displayedTasks, projectMap = d.GetAll()
+	displayedProjects = convertMapToList(projectMap)
 
-	list = c.ConfigureTaskList(app, displayedTasks)
+	taskList = c.ConfigureTaskList(app, displayedTasks)
+	projectList = c.ConfigureProjectList(app, displayedProjects)
+
 	inputField = c.RenderSearchBox(app, onSearchbarChange(), onSearchBarSubmit())
 
-	flex = tview.NewFlex().SetDirection(tview.FlexRow).
+	taskFlex = tview.NewFlex().
+		AddItem(projectList, 0, 1, true).
+		AddItem(taskList, 0, 4, false)
+
+	appFlex = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(inputField, 3, 1, true).
-		AddItem(list, 0, 10, false)
+		AddItem(taskFlex, 0, 10, false)
 
 }
 
@@ -43,15 +55,17 @@ func Run() {
 		}
 	})
 
-	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
+	if err := app.SetRoot(appFlex, true).SetFocus(appFlex).Run(); err != nil {
 		panic(err)
 	}
 }
 
 func onSearchbarChange() func(string) {
 	return func(s string) {
-		displayedTasks = d.Get(s)
-		c.ReRenderList(list, displayedTasks)
+		displayedTasks, projectMap = d.Get(s)
+		displayedProjects = convertMapToList(projectMap)
+		c.ReRenderList(taskList, displayedTasks)
+        c.ReRenderProjectList(projectList, displayedProjects)
 	}
 }
 
@@ -62,11 +76,10 @@ func onSearchBarSubmit() func(string) {
 	}
 }
 
-
 func handleMovement(k tcell.Key) {
 	var focusedIndex int
-	for i := 0; i < flex.GetItemCount(); i++ {
-		item := flex.GetItem(i)
+	for i := 0; i < appFlex.GetItemCount(); i++ {
+		item := appFlex.GetItem(i)
 		if item.HasFocus() {
 			focusedIndex = i
 			break
@@ -75,7 +88,7 @@ func handleMovement(k tcell.Key) {
 	var toBeFocusedIndex int
 	switch k {
 	case tcell.KeyRight:
-		if focusedIndex < flex.GetItemCount()-1 {
+		if focusedIndex < appFlex.GetItemCount()-1 {
 			toBeFocusedIndex = focusedIndex + 1
 		} else {
 			toBeFocusedIndex = 0
@@ -85,11 +98,21 @@ func handleMovement(k tcell.Key) {
 		if focusedIndex > 0 {
 			toBeFocusedIndex = focusedIndex - 1
 		} else {
-			toBeFocusedIndex = flex.GetItemCount() - 1
+			toBeFocusedIndex = appFlex.GetItemCount() - 1
 		}
 
 	}
-	toBeFocusedItem := flex.GetItem(toBeFocusedIndex)
+	toBeFocusedItem := appFlex.GetItem(toBeFocusedIndex)
 	app.SetFocus(toBeFocusedItem)
 
+}
+
+func convertMapToList(ms map[m.Project]bool) []m.Project {
+	keys := make([]m.Project, 0, len(ms))
+	for key := range ms {
+		keys = append(keys, key)
+	}
+
+	sort.Slice(keys, func(i int, j int) bool { return keys[i].Name < keys[j].Name })
+	return keys
 }
