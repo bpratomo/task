@@ -28,7 +28,7 @@ func configure() {
 	globalState.DisplayedTasks, projectMap = d.GetAll()
 	globalState.DisplayedProjects = convertMapToList(projectMap)
 
-	taskList, projectList = l.ConfigureLists(app, &globalState,refresh)
+	taskList, projectList = l.ConfigureLists(app, &globalState, refresh)
 
 	omnibar = o.RenderSearchBox(app, onSearchbarChange(), onSearchBarSubmit())
 
@@ -65,6 +65,14 @@ func Run() {
 			app.SetFocus(omnibar)
 			globalState.InputMode = true
 			return nil
+
+		case event.Rune() == 'l' && globalState.InputMode == false:
+			handleMovement(tcell.KeyRight)
+			return nil
+		case event.Rune() == 'h' && globalState.InputMode == false:
+			handleMovement(tcell.KeyLeft)
+			return nil
+
 		}
 
 		return event
@@ -77,14 +85,14 @@ func Run() {
 
 func onSearchbarChange() func(string) {
 	return func(s string) {
-		globalState.DisplayedTasks, projectMap = d.Get(s)
-		globalState.DisplayedProjects = convertMapToList(projectMap)
+		globalState.FilterTaskString = s
+		refresh()
 		l.ReRenderLists()
 	}
 }
 
 func refresh() {
-	globalState.DisplayedTasks, projectMap = d.GetAll()
+	globalState.DisplayedTasks, projectMap = d.Get(globalState.FilterTaskString, globalState.FilterProjectString)
 	globalState.DisplayedProjects = convertMapToList(projectMap)
 }
 

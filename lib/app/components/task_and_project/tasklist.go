@@ -33,7 +33,9 @@ func ReRenderTaskList() {
 }
 
 func RenderTaskList() {
-    if state == nil {return}
+	if state == nil {
+		return
+	}
 	for i, task := range state.DisplayedTasks {
 		istr := strconv.Itoa(i + 1)
 		irunes := []rune(istr)
@@ -50,8 +52,17 @@ func onTaskKeyPress(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Rune() {
 	case 'd':
 		c.Delete([]string{selectedId})
-        ReRenderLists()
+		ReRenderLists()
 		return event
+	case 'j':
+		nextIndex := GetNextIndex(taskList, selectedIndex)
+		taskList.SetCurrentItem(nextIndex)
+		return event
+	case 'k':
+		nextIndex := GetPrevIndex(taskList, selectedIndex)
+		taskList.SetCurrentItem(nextIndex)
+		return event
+
 	default:
 		return event
 	}
