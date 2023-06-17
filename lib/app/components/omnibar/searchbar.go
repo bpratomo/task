@@ -8,8 +8,8 @@ import (
 var inputField *tview.InputField
 var placeholderText = "Start typing to search or add a new Task..."
 
-func RenderSearchBox(app *tview.Application, changeCallback func(string), doneCallback func(string)) *tview.InputField {
-	inputField = RenderSearchField(app)
+func RenderSearchBox(changeCallback func(string), doneCallback func(string)) *tview.InputField {
+	inputField = RenderSearchField()
 	var bgStyle tcell.Style
 	bgStyle.Background(tcell.ColorDefault)
 
@@ -39,12 +39,9 @@ func doneFunc(event *tcell.EventKey) {
 
 }
 
-func RenderSearchField(app *tview.Application) *tview.InputField {
+func RenderSearchField() *tview.InputField {
 	inputField := tview.NewInputField().
-		SetPlaceholder(placeholderText).
-		SetDoneFunc(func(key tcell.Key) {
-			app.Stop()
-		})
+		SetPlaceholder(placeholderText)
 
 	return inputField
 

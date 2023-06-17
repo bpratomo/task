@@ -5,10 +5,12 @@ import (
 )
 
 type GlobalState struct {
-    FilterTaskString string
-    FilterProjectString string
-	DisplayedTasks    []m.Task
-	DisplayedProjects []m.Project
-	InputMode         bool
-}
+	TaskBeingEdited     m.Task
+	FilterTaskString    string
+	FilterProjectString string
+	DisplayedTasks      []m.Task
+	DisplayedProjects   []m.Project
+	InputMode           bool
 
+	RefreshData func()
+}

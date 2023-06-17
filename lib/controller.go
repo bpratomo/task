@@ -35,7 +35,7 @@ func ProcessRequest(s []string) {
 		c.Delete(payload)
 
 	case "update", "u":
-		c.Update(payload)
+		c.UpdateCli(payload)
 
 	default:
 		app.Run()

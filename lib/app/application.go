@@ -4,6 +4,7 @@ import (
 	"sort"
 	o "task/lib/app/components/omnibar"
 	l "task/lib/app/components/task_and_project"
+	t "task/lib/app/components/taskeditor"
 	g "task/lib/app/global"
 	r "task/lib/controllers"
 	d "task/lib/database"
@@ -19,6 +20,8 @@ var taskFlex *tview.Flex
 var projectMap map[m.Project]bool
 var omnibar *tview.InputField
 var taskList *tview.List
+var taskEditor *tview.Form
+var pages *tview.Pages
 var projectList *tview.List
 
 var globalState g.GlobalState
@@ -27,10 +30,12 @@ func configure() {
 	app = tview.NewApplication()
 	globalState.DisplayedTasks, projectMap = d.GetAll()
 	globalState.DisplayedProjects = convertMapToList(projectMap)
+	globalState.RefreshData = refreshData
 
-	taskList, projectList = l.ConfigureLists(app, &globalState, refresh)
+	taskList, projectList = l.ConfigureLists(&globalState, refreshData, activateTaskEditor())
+	taskEditor = t.ConfigureTaskEditor(&globalState, onTaskEditorSubmit(), onTaskEditorCancel())
 
-	omnibar = o.RenderSearchBox(app, onSearchbarChange(), onSearchBarSubmit())
+	omnibar = o.RenderSearchBox(onSearchbarChange(), onSearchBarSubmit())
 
 	taskFlex = tview.NewFlex().
 		AddItem(projectList, 0, 1, true).
@@ -38,6 +43,8 @@ func configure() {
 
 	appFlex = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(taskFlex, 0, 10, false)
+
+	pages = tview.NewPages().AddPage("main", appFlex, true, true)
 
 }
 
@@ -47,6 +54,7 @@ func Run() {
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
+			deactivateTaskEditor()
 			appFlex.RemoveItem(omnibar)
 			app.SetFocus(taskList)
 			globalState.InputMode = false
@@ -78,20 +86,54 @@ func Run() {
 		return event
 	})
 
-	if err := app.SetRoot(appFlex, true).SetFocus(projectList).Run(); err != nil {
+	if err := app.SetRoot(pages, true).SetFocus(projectList).Run(); err != nil {
 		panic(err)
 	}
+}
+
+func onTaskEditorCancel() func() {
+	return func() {
+		deactivateTaskEditor()
+	}
+}
+
+func onTaskEditorSubmit() func() {
+	return func() {
+		refreshData()
+		deactivateTaskEditor()
+		l.ReRenderLists()
+	}
+
 }
 
 func onSearchbarChange() func(string) {
 	return func(s string) {
 		globalState.FilterTaskString = s
-		refresh()
+		refreshData()
 		l.ReRenderLists()
 	}
 }
 
-func refresh() {
+func activateTaskEditor() func(m.Task) {
+	return func(task m.Task) {
+		globalState.TaskBeingEdited = task
+		globalState.InputMode = true
+		taskEditor = t.ConfigureTaskEditor(&globalState, onTaskEditorSubmit(), onTaskEditorCancel())
+		pages.AddPage("editor", taskEditor, true, true)
+		app.SetFocus(taskEditor)
+
+	}
+
+}
+
+func deactivateTaskEditor() {
+	globalState.TaskBeingEdited = m.Task{}
+	globalState.InputMode = false
+	pages.RemovePage("editor")
+	app.SetFocus(taskList)
+}
+
+func refreshData() {
 	globalState.DisplayedTasks, projectMap = d.Get(globalState.FilterTaskString, globalState.FilterProjectString)
 	globalState.DisplayedProjects = convertMapToList(projectMap)
 }

@@ -3,23 +3,24 @@ package app
 import (
 	"github.com/rivo/tview"
 	g "task/lib/app/global"
+    m "task/lib/models"
 )
 
 var state *g.GlobalState
 var refresh func()
+var activateTaskEditor func(m.Task)
 
-func ConfigureLists(app *tview.Application, globalState *g.GlobalState, refreshCallback func()) (*tview.List, *tview.List) {
+func ConfigureLists(globalState *g.GlobalState, refreshCallback func(), activateTaskEditorCallback func(m.Task)) (*tview.List, *tview.List) {
 	state = globalState
 	refresh = refreshCallback
+    activateTaskEditor = activateTaskEditorCallback
 
-	taskList := ConfigureTaskList(app)
-	projectList := ConfigureProjectList(app)
+	taskList := ConfigureTaskList()
+	projectList := ConfigureProjectList()
 
 	return taskList, projectList
 
 }
-
-
 
 func ReRenderLists() {
 	refresh()

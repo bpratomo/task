@@ -26,14 +26,19 @@ func Create(titleSlice []string) error {
 
 func GetAll(filterSlice []string) {
 	filter := strings.Join(filterSlice, " ")
-	tasks, _ := d.Get(filter,"")
+	tasks, _ := d.Get(filter, "")
 
 	for _, task := range tasks {
 		fmt.Printf("%v: %v \n", task.ID, task.Title)
 	}
 }
 
-func Update(params []string) error {
+func Update(t m.Task) error {
+	return d.Update(t.ID, t)
+
+}
+
+func UpdateCli(params []string) error {
 	if len(params) < 2 {
 		fmt.Println("Not enough parameters. Please insert task id and title to update")
 	}

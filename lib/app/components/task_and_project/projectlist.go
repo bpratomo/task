@@ -14,14 +14,14 @@ var selectedProjectId string
 var selectedProjectIndex int
 var curProjectList *tview.List
 
-func ConfigureProjectList(app *tview.Application) *tview.List {
+func ConfigureProjectList() *tview.List {
 	curProjectList = tview.NewList()
-	RenderProjectList()
 	curProjectList.SetBorder(true).SetTitle("Projects").SetTitleAlign(tview.AlignLeft)
 	curProjectList.SetChangedFunc(onProjectSelect)
 	curProjectList.SetInputCapture(onProjectKeyPress)
 	curProjectList.SetSelectedFocusOnly(true)
 	curProjectList.ShowSecondaryText(false)
+	RenderProjectList()
 
 	return curProjectList
 
