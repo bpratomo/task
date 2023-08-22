@@ -4,7 +4,7 @@ import (
 	"strconv"
 	c "task/lib/controllers"
 
-	// conf "task/lib/config"
+	g "task/lib/app/global"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -15,14 +15,17 @@ var selectedProjectIndex int
 var curProjectList *tview.List
 
 func ConfigureProjectList() *tview.List {
+	selectedProjectIndex = 0
 	curProjectList = tview.NewList()
 	curProjectList.SetBorder(true).SetTitle("Projects").SetTitleAlign(tview.AlignLeft)
 	curProjectList.SetChangedFunc(onProjectSelect)
 	curProjectList.SetInputCapture(onProjectKeyPress)
 	curProjectList.SetSelectedFocusOnly(true)
 	curProjectList.ShowSecondaryText(false)
-	RenderProjectList()
+	curProjectList.SetFocusFunc(state.FocusFuncFactory(curProjectList))
+	curProjectList.SetBlurFunc(state.BlurFuncFactory(curProjectList))
 
+	RenderProjectList()
 	return curProjectList
 
 }
@@ -45,27 +48,32 @@ func RenderProjectList() {
 }
 
 func onProjectSelect(index int, mainText string, secondaryText string, shortcut rune) {
+	// state.RefreshData()
+	if index == selectedProjectIndex {
+		return
+	}
 	selectedProjectId = secondaryText
-	selectedProjectIndex = index
 	state.FilterProjectString = secondaryText
-	refresh()
+	state.RefreshData([]g.RefreshCategory{g.TaskList})
 	ReRenderTaskList()
 }
 
 func onProjectKeyPress(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Rune() {
 	case 'd':
-		c.Delete([]string{selectedProjectId})
-		ReRenderProjectList()
+		c.DeleteProject([]string{selectedProjectId})
+		state.RefreshData([]g.RefreshCategory{g.AllList})
 		return event
 	case 'j':
+		selectedProjectIndex = curProjectList.GetCurrentItem()
 		nextIndex := GetNextIndex(curProjectList, selectedProjectIndex)
 		curProjectList.SetCurrentItem(nextIndex)
-		return event
+		return nil
 	case 'k':
+		selectedProjectIndex = curProjectList.GetCurrentItem()
 		nextIndex := GetPrevIndex(curProjectList, selectedProjectIndex)
 		curProjectList.SetCurrentItem(nextIndex)
-		return event
+		return nil
 
 	default:
 		return event

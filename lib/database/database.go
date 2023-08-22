@@ -5,8 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/boltdb/bolt"
 	m "task/lib/models"
+
+	"github.com/boltdb/bolt"
 )
 
 func connect() *bolt.DB {
@@ -55,10 +56,10 @@ func Update(id int, t m.Task) error {
 }
 
 func GetAll() ([]m.Task, map[m.Project]bool) {
-	return Get("","")
+	return Get("", "")
 }
 
-func Get(taskFilter string, projectFilter string) ([]m.Task, map[m.Project]bool) {
+func Get(taskFilter string, projectFilter string) (tasks []m.Task, projects map[m.Project]bool) {
 	var ts []m.Task
 	var ps map[m.Project]bool
 	ps = make(map[m.Project]bool)
@@ -92,6 +93,14 @@ func Get(taskFilter string, projectFilter string) ([]m.Task, map[m.Project]bool)
 	db.Close()
 
 	return ts, ps
+}
+
+func DeleteProject(projectName string) error {
+	tasks, _ := Get("", projectName)
+	for _, t := range tasks {
+		Delete(t.ID)
+	}
+	return nil
 }
 
 func Delete(id int) error {

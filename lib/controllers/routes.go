@@ -55,6 +55,13 @@ func UpdateCli(params []string) error {
 	return err
 }
 
+func DeleteProject(projects []string) error {
+	for _, project := range projects {
+		d.DeleteProject(project)
+	}
+	return nil
+}
+
 func Delete(ids []string) error {
 	for _, id := range ids {
 		idInt, err := strconv.Atoi(id)
