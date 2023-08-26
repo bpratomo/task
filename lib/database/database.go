@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"strings"
 
 	m "task/lib/models"
@@ -11,7 +12,8 @@ import (
 )
 
 func connect() *bolt.DB {
-	db, err := bolt.Open("my.db", 0600, nil)
+    homedir,_  := os.UserHomeDir() 
+	db, err := bolt.Open(homedir + "/.config/task_app/my.db", 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
