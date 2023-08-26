@@ -3,10 +3,14 @@ Minimalist cli todo application built in Go.
 
 # Demo
 GUI mode:
-[Task App Demo.webm](https://github.com/bpratomo/task/assets/49658095/bf5cd943-f22b-48b0-9777-0fa0204161cb)
+https://github.com/bpratomo/task/assets/49658095/af7a9f62-84a0-4e1f-92f6-2612aebce488
+
+
 
 CLI mode:
-[Task App CLI demo.webm](https://github.com/bpratomo/task/assets/49658095/ecfb9f92-2029-4c32-99aa-45c827678a60)
+https://github.com/bpratomo/task/assets/49658095/966cac68-af7a-4715-8d40-b86371d21b35
+
+
 
 
 # Features: 
