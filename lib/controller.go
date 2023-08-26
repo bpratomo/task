@@ -25,7 +25,7 @@ func ProcessRequest(s []string) {
 	verb, payload := parseArgs(s)
 
 	switch verb {
-	case "create", "c", "a":
+	case "create", "c", "a", "add":
 		c.Create(payload)
 
 	case "get", "g":
