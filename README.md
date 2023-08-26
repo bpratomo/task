@@ -1,7 +1,7 @@
 # task
 Minimalist cli todo application built in Go. 
 
-# demo
+# Demo
 GUI mode:
 [Task App Demo.webm](https://github.com/bpratomo/task/assets/49658095/bf5cd943-f22b-48b0-9777-0fa0204161cb)
 
