@@ -49,8 +49,9 @@ func UpdateCli(params []string) error {
 	}
 	titleSlice := params[1:]
 	title := strings.Join(titleSlice, " ")
+	t := s.ParseTaskSubmission(title)
+    t.ID = idInt
 
-	t := m.Task{ID: idInt, Title: title}
 	err = d.Update(idInt, t)
 	return err
 }
