@@ -54,7 +54,7 @@ func RenderTaskList() {
 		istr := strconv.Itoa(i + 1)
 		irunes := []rune(istr)
 		content, _ := json.Marshal(task)
-		taskList.AddItem("Project :"+task.Project.Name+" - "+task.Title, string(content), irunes[0], nil)
+		taskList.AddItem(task.Project.Name+" - "+task.Title, string(content), irunes[0], nil)
 		if i == 0 {
 			selectedTask = task
 		}

@@ -13,7 +13,7 @@ type TaskSubmission struct {
 func ParseTaskSubmission(s string) m.Task {
 	project, _ := extractProject(s)
 	task := m.Task{
-		Title:   s,
+		Title:  s, 
 		Project: project,
 	}
 	return task

@@ -6,25 +6,48 @@ import (
 	g "task/lib/app/global"
 )
 
-var helpText *tview.TextView
+var helpTextComponent *tview.TextView
 var placeholderText = ""
 var globalState *g.GlobalState
 
 func ConfigureHelpText(state *g.GlobalState) *tview.TextView {
 	globalState = state
-	helpText = RenderHelpText()
+	helpTextComponent = RenderHelpText()
 	var bgStyle tcell.Style
 	bgStyle.Background(tcell.ColorDefault)
-	helpText.SetBorder(true).SetTitle("Help text")
-	helpText.SetFocusFunc(state.FocusFuncFactory(helpText))
-	helpText.SetBlurFunc(state.BlurFuncFactory(helpText))
+	helpTextComponent.SetBorder(true).SetTitle("Help text")
+	helpTextComponent.SetFocusFunc(state.FocusFuncFactory(helpTextComponent))
+	helpTextComponent.SetBlurFunc(state.BlurFuncFactory(helpTextComponent))
+	state.ReRenderHelpText = ReRenderHelpText
 
-	return helpText
+	return helpTextComponent
 }
 
 func RenderHelpText() *tview.TextView {
-	helpText := tview.NewTextView()
-	helpText.SetText("")
+	helpTextComponent := tview.NewTextView()
+	helpText := retrieveHelpText()
+	helpTextComponent.SetText(helpText)
 
-	return helpText
+	return helpTextComponent
+}
+
+func ReRenderHelpText() {
+	helpText := retrieveHelpText()
+	helpTextComponent.SetText(helpText)
+}
+
+func retrieveHelpText() string {
+	focusedComponent := globalState.GetFocus()
+	switch focusedComponent {
+	case globalState.ComponentPointers["projectList"]:
+		return "j&k: navigate up & down  | l: go to tasks | a: add task | d: delete project and all associated tasks"
+	case globalState.ComponentPointers["taskList"]:
+		return "j&k: navigate up & down  | h: go to projects | a: add task | d: delete task"
+	case globalState.ComponentPointers["omnibar"]:
+		return "esc: exit omnibar | enter: add task"
+	default:
+		return ""
+
+	}
+
 }

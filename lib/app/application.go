@@ -43,6 +43,11 @@ func configureComponents() {
 	taskList, projectList = l.ConfigureLists(&globalState, activateTaskEditor())
 	omnibar = o.ConfigureOmnibox(&globalState)
 	helpText = h.ConfigureHelpText(&globalState)
+
+	globalState.ComponentPointers = make(map[string]tview.Primitive)
+	globalState.ComponentPointers["projectList"] = projectList
+	globalState.ComponentPointers["taskList"] = taskList
+	globalState.ComponentPointers["omnibar"] = omnibar
 }
 
 func configureLayout() {
@@ -65,6 +70,10 @@ func configureEventCapture() {
 			deactivateTaskEditor()
 			// appFlex.RemoveItem(omnibar)
 			app.SetFocus(taskList)
+			if globalState.ReRenderHelpText != nil {
+				globalState.ReRenderHelpText()
+			}
+
 			globalState.InputMode = false
 			return event
 
@@ -75,11 +84,11 @@ func configureEventCapture() {
 
 		switch {
 		case event.Rune() == 'a' && globalState.InputMode == false:
-			// appFlex.Clear()
-			// appFlex.AddItem(omnibar, 3, 1, true)
-			// appFlex.AddItem(taskFlex, 0, 10, false)
 			app.SetFocus(omnibar)
 			globalState.InputMode = true
+			if globalState.ReRenderHelpText != nil {
+				globalState.ReRenderHelpText()
+			}
 			return nil
 
 		case event.Rune() == 'l' && globalState.InputMode == false:
@@ -139,6 +148,9 @@ func handleHorizontalMovement(k tcell.Key) {
 
 	case taskList:
 		app.SetFocus(projectList)
+	}
+	if globalState.ReRenderHelpText != nil {
+		globalState.ReRenderHelpText()
 	}
 
 }

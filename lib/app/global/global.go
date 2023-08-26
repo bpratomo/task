@@ -26,21 +26,24 @@ type GlobalState struct {
 	InputMode           bool
 	RefreshCallbacks    map[RefreshCategory]func()
 	GetFocus            func() tview.Primitive
+	ComponentPointers   map[string]tview.Primitive
+	ReRenderHelpText    func()
 }
 
 func (g *GlobalState) FocusFuncFactory(t tview.Primitive) func() {
 	switch t.(type) {
 	case *tview.InputField:
 		return func() {
-			t.(*tview.InputField).SetBorderColor(tcell.ColorRed)
+			t.(*tview.InputField).SetBorderColor(tcell.Color100)
 		}
 
 	case *tview.List:
 		return func() {
-			t.(*tview.List).SetBorderColor(tcell.ColorRed)
+			t.(*tview.List).SetBorderColor(tcell.Color101)
 		}
 
 	}
+
 	return nil
 
 }
